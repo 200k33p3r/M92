@@ -11,7 +11,7 @@ class chi2:
     def read_input(self):
         #read M92 observed data
         self.obs_data = pd.read_csv('/home/mying/Desktop/ObservationalData/M92_fitstars.dat',sep='\s+',names=['v','i','vi'],skiprows=3)
-        self.obs_size = len(self.obs_data)
+        #self.obs_size = len(self.obs_data)
 
     #search for bin number for each data point
     def search_point_location_bc(self,x, y, xBar, yBar):
@@ -78,11 +78,14 @@ class chi2:
             for dm in dms:
                 for red in reds:
                     bin_count = np.zeros(len(xBar))
-                    bin_num = self.search_point_location_bc((self.obs_data['vi'].values - red)*12.5, self.obs_data['v'].values - dm, xBar, yBar)
-                    for j in range(self.obs_size):
+                    dp = self.obs_data
+                    dp = dp[(dp['vi'] - red < (obs_vi_max - red_max)) & (dp['vi'] - red > (obs_vi_min - red_min))& (dp['v'] - dm < (obs_v_max - dm_max)) & (dp['v'] - dm > (obs_v_min - dm_min))]
+                    obs_size = len(dp)
+                    bin_num = self.search_point_location_bc((dp['vi'].values - red)*12.5, dp['v'].values - dm, xBar, yBar)
+                    for j in range(obs_size):
                         bin_count[bin_num[j]] += 1
                     #calculate chi2
-                    chi2.append([age, dm, red, np.inner(np.divide(bin_count,bin_count_std/(total_pt/self.obs_size)) - 1, bin_count - bin_count_std/(total_pt/self.obs_size))])
+                    chi2.append([age, dm, red, np.inner(np.divide(bin_count,bin_count_std/(total_pt/obs_size)) - 1, bin_count - bin_count_std/(total_pt/obs_size))])
         self.chi2 = chi2
 
 
